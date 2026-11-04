@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#190b2b">
+  <title>幸运老虎机抽奖</title>
+  <style>
+    :root { color-scheme: dark; --gold:#ffd76a; --pink:#ff65bd; --cyan:#66eaff; --ink:#190b2b; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; color:#fff; font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif; background:radial-gradient(ellipse at 50% 12%,#58265f 0,transparent 45%),linear-gradient(145deg,#160a2c,#09091b 70%); }
+    .page { width:min(1100px,94vw); margin:auto; padding:30px 0 52px; }
+    header { text-align:center; margin-bottom:22px; }
+    .eyebrow { color:var(--cyan); letter-spacing:.28em; font-size:12px; font-weight:700; }
+    h1 { margin:8px 0; font-size:clamp(32px,6vw,54px); letter-spacing:.1em; text-shadow:0 0 24px rgba(255,101,189,.5); }
+    .subtitle { margin:0; color:#c8bfdc; }
+    .machine { position:relative; width:min(650px,100%); margin:28px auto 22px; padding:26px clamp(14px,5vw,42px) 30px; border:4px solid #ffcf52; border-radius:34px; background:linear-gradient(145deg,#9b2b64,#541d69 50%,#32144d); box-shadow:inset 0 0 0 5px rgba(255,237,157,.18),0 0 30px rgba(255,101,189,.28),0 28px 65px rgba(0,0,0,.42); }
+    .machine::before { content:""; position:absolute; inset:9px; border:1px solid rgba(255,232,148,.45); border-radius:25px; pointer-events:none; }
+    .bulbs { display:flex; justify-content:space-around; gap:9px; margin:0 2px 18px; }
+    .bulb { width:13px; height:13px; border-radius:50%; background:var(--gold); box-shadow:0 0 12px var(--gold); animation:bulb 1s ease-in-out infinite alternate; }
+    .bulb:nth-child(2n) { animation-delay:.35s; }
+    @keyframes bulb { to { opacity:.42; transform:scale(.75); } }
+    .machine-title { margin:0 0 14px; color:#fff1b7; text-align:center; font-weight:900; letter-spacing:.22em; font-size:clamp(15px,3vw,20px); text-shadow:0 2px 10px rgba(0,0,0,.45); }
+    .reel-frame { position:relative; overflow:hidden; width:min(420px,100%); height:270px; margin:0 auto; border:7px solid #ffc943; border-radius:22px; background:#fff; box-shadow:inset 0 0 24px rgba(0,0,0,.25),0 0 22px rgba(255,215,106,.45); }
+    .reel-frame::before,.reel-frame::after { content:""; position:absolute; left:0; right:0; z-index:2; height:48px; pointer-events:none; }
+    .reel-frame::before { top:0; background:linear-gradient(#fff,transparent); }
+    .reel-frame::after { bottom:0; background:linear-gradient(transparent,#fff); }
+    .reel { display:flex; flex-direction:column; align-items:center; transform:translateY(0); will-change:transform; }
+    .reel-entry { flex:0 0 270px; width:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:11px; color:#26123c; background:linear-gradient(145deg,#fff,#eee8ff); }
+    .reel-entry img { width:175px; height:175px; object-fit:cover; border:6px solid #fff; border-radius:50%; box-shadow:0 5px 20px rgba(49,25,73,.3); background:#ded5f5; }
+    .reel-entry strong { max-width:90%; overflow:hidden; color:#3d1a5e; font-size:23px; text-overflow:ellipsis; white-space:nowrap; }
+    .slot-pointer { position:absolute; z-index:3; top:50%; width:0; height:0; transform:translateY(-50%); border-top:18px solid transparent; border-bottom:18px solid transparent; }
+    .slot-pointer.left { left:4px; border-left:25px solid #ff5b83; filter:drop-shadow(0 0 5px #ff5b83); }
+    .slot-pointer.right { right:4px; border-right:25px solid #ff5b83; filter:drop-shadow(0 0 5px #ff5b83); }
+    .machine-controls { display:flex; justify-content:center; align-items:center; gap:18px; margin-top:22px; }
+    .lever { position:relative; width:56px; height:56px; border-radius:50%; color:#371343; background:linear-gradient(145deg,#fff08c,#ffad36); box-shadow:0 5px 0 #b74750,0 8px 20px rgba(0,0,0,.25); font-size:24px; }
+    .lever:active:not(:disabled) { transform:translateY(3px); box-shadow:0 2px 0 #b74750; }
+    button { font:inherit; cursor:pointer; color:#fff; border:0; transition:transform .16s,filter .16s,opacity .16s; }
+    button:hover:not(:disabled) { filter:brightness(1.12); }
+    button:disabled { opacity:.5; cursor:not-allowed; }
+    .primary { padding:13px 27px; border-radius:999px; color:#3b1746; font-weight:900; letter-spacing:.08em; background:linear-gradient(100deg,#ffe47d,#ff8ecb); box-shadow:0 7px 22px rgba(255,101,189,.3); }
+    .secondary { padding:11px 18px; border:1px solid rgba(255,255,255,.2); border-radius:999px; background:rgba(255,255,255,.1); }
+    .announcement { min-height:36px; margin:8px 0 22px; text-align:center; color:var(--gold); font-size:clamp(20px,4vw,28px); font-weight:900; text-shadow:0 0 18px rgba(255,215,106,.5); }
+    .panel { padding:19px; border:1px solid rgba(176,159,255,.2); border-radius:18px; background:rgba(31,26,73,.82); box-shadow:0 18px 50px rgba(0,0,0,.2); }
+    .details { display:grid; grid-template-columns:1.2fr .8fr; gap:16px; }
+    h2 { margin:0 0 8px; font-size:17px; }
+    .help,.note { margin:0 0 10px; color:#bdb5d5; font-size:12px; line-height:1.65; }
+    .count { color:#bdb5d5; font-size:13px; margin:0 0 10px; }
+    .count strong { color:var(--cyan); }
+    textarea { width:100%; min-height:125px; resize:vertical; border:1px solid rgba(184,169,255,.27); border-radius:11px; padding:11px; outline:0; color:#f5f2ff; background:rgba(9,7,30,.55); font:13px/1.8 ui-monospace,monospace; }
+    textarea:focus { border-color:var(--cyan); }
+    .actions { display:flex; gap:8px; margin-top:9px; }
+    .actions button { padding:9px 12px; border-radius:9px; background:rgba(116,95,190,.4); font-size:12px; }
+    .history { display:flex; flex-direction:column; gap:7px; max-height:220px; overflow:auto; }
+    .winner-row { display:flex; align-items:center; gap:9px; padding:7px 9px; border-radius:10px; background:rgba(255,255,255,.06); color:#eee8ff; font-size:13px; }
+    .winner-row img { width:34px; height:34px; border-radius:50%; object-fit:cover; }
+    .empty { color:#8981a7; font-size:13px; }
+    .home { display:block; width:max-content; margin:20px auto 0; color:#c3baff; text-decoration:none; font-size:13px; }
+    .home:hover { color:#fff; }
+    #confetti { position:fixed; inset:0; width:100%; height:100%; z-index:8; pointer-events:none; }
+    .modal { position:fixed; inset:0; z-index:7; display:grid; place-items:center; padding:20px; background:rgba(7,4,20,.78); backdrop-filter:blur(8px); opacity:0; visibility:hidden; transition:opacity .25s,visibility .25s; }
+    .modal.open { opacity:1; visibility:visible; }
+    .modal-card { width:min(390px,92vw); padding:28px; border:2px solid var(--gold); border-radius:28px; background:linear-gradient(145deg,#43245e,#17112f); text-align:center; box-shadow:0 0 55px rgba(255,101,189,.42); transform:scale(.55); transition:transform .45s cubic-bezier(.2,1.5,.4,1); }
+    .modal.open .modal-card { transform:scale(1); }
+    .modal-card img { width:clamp(170px,48vw,245px); height:clamp(170px,48vw,245px); border:7px solid var(--gold); border-radius:50%; object-fit:cover; box-shadow:0 0 30px rgba(255,215,106,.5); }
+    .modal-card p { margin:15px 0 4px; color:var(--cyan); font-size:12px; letter-spacing:.2em; }
+    .modal-card h2 { margin:0 0 18px; color:var(--gold); font-size:clamp(28px,8vw,40px); overflow-wrap:anywhere; }
+    @media(max-width:680px) { .details { grid-template-columns:1fr; } .machine { padding:22px 12px 25px; } .reel-frame { height:235px; } .reel-entry { flex-basis:235px; } .reel-entry img { width:145px; height:145px; } .reel-entry strong { font-size:20px; } }
+    @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; } }
+  </style>
+</head>
+<body>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+  <main class="page">
+    <header><div class="eyebrow">LUCKY SLOT · SPIN TO WIN</div><h1>幸运老虎机</h1><p class="subtitle">拉下幸运摇杆，让惊喜转出来</p></header>
+    <section class="machine" aria-label="老虎机抽奖机">
+      <div class="bulbs" aria-hidden="true"><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i><i class="bulb"></i></div>
+      <p class="machine-title">✦ LUCKY WINNER ✦</p>
+      <div class="reel-frame" id="reelFrame"><span class="slot-pointer left"></span><span class="slot-pointer right"></span><div class="reel" id="reel"></div></div>
+      <div class="machine-controls"><button class="lever" id="leverButton" type="button" aria-label="拉动老虎机摇杆">↻</button><button class="primary" id="spinButton" type="button">拉动摇杆 · 开始抽奖</button></div>
+    </section>
+    <p class="announcement" id="announcement" aria-live="assertive">好运正在等待你的召唤</p>
+    <div class="details">
+      <section class="panel"><h2>参与名单</h2><p class="help">每行一位参与者，可写成「姓名,头像网址」。不填网址会自动分配网络头像。</p><div class="count">可抽 <strong id="remainingCount">0</strong> 人 · 已中奖 <strong id="winnerCount">0</strong> 人</div><textarea id="participants" aria-label="参与者名单" spellcheck="false"></textarea><div class="actions"><button id="applyButton" type="button">更新名单</button><button id="sampleButton" type="button">载入示例</button><button id="resetButton" type="button">重置抽奖</button></div><p class="note">中奖者不会重复参与本轮抽奖。头像图片需联网加载。</p></section>
+      <section class="panel"><h2>中奖名单</h2><div class="history" id="history"><div class="empty">中奖结果会显示在这里</div></div></section>
+    </div>
+    <a class="home" href="index.html">← 返回工具索引</a>
+  </main>
+  <section class="modal" id="winnerModal" role="dialog" aria-modal="true" aria-labelledby="modalName" aria-hidden="true"><div class="modal-card"><img id="modalAvatar" alt="中奖者头像"><p>恭喜本轮幸运儿</p><h2 id="modalName"></h2><button class="secondary" id="closeModal" type="button">继续抽奖</button></div></section>
+<script>
+  const samplePeople=[['林小满','women/44'],['陈星宇','men/32'],['周可欣','women/68'],['王子涵','men/75'],['苏念','women/12'],['赵一鸣','men/46'],['许安然','women/23'],['顾明远','men/18'],['沈知夏','women/55'],['陆景行','men/61'],['唐果果','women/39'],['程予安','men/84']];
+  const fallback='https://randomuser.me/api/portraits/lego/1.jpg';
+  const input=document.getElementById('participants'),reel=document.getElementById('reel'),frame=document.getElementById('reelFrame'),spinButton=document.getElementById('spinButton'),announcement=document.getElementById('announcement'),modal=document.getElementById('winnerModal');
+  let people=[],winners=[],spinning=false,timer=null,offset=0;
+  function loadSamples(){input.value=samplePeople.map(([name,path])=>`${name},https://randomuser.me/api/portraits/${path}.jpg`).join('\n');}
+  function parsePeople(text){const seen=new Set();return text.split(/\r?\n/).map((line,i)=>{const parts=line.split(','),name=(parts.shift()||'').trim(),image=parts.join(',').trim();if(!name||seen.has(name))return null;seen.add(name);return{name,image:image||`https://i.pravatar.cc/160?img=${i%70+1}`,winner:false};}).filter(Boolean);}
+  function entry(person){const el=document.createElement('div');el.className='reel-entry';const img=document.createElement('img');img.src=person.image;img.alt='';img.onerror=()=>{img.onerror=null;img.src=fallback;};const name=document.createElement('strong');name.textContent=person.name;el.append(img,name);return el;}
+  function setReelPerson(person){reel.replaceChildren(entry(person));offset=0;reel.style.transition='none';reel.style.transform='translateY(0)';}
+  function updateCounts(){document.getElementById('remainingCount').textContent=people.filter(p=>!p.winner).length;document.getElementById('winnerCount').textContent=winners.length;spinButton.disabled=spinning||!people.some(p=>!p.winner);document.getElementById('leverButton').disabled=spinButton.disabled;}
+  function renderHistory(){const list=document.getElementById('history');list.replaceChildren();if(!winners.length){const empty=document.createElement('div');empty.className='empty';empty.textContent='中奖结果会显示在这里';list.appendChild(empty);return;}[...winners].reverse().forEach(person=>{const row=document.createElement('div');row.className='winner-row';const img=document.createElement('img');img.src=person.image;img.alt='';img.onerror=()=>{img.onerror=null;img.src=fallback;};const name=document.createElement('span');name.textContent=person.name;row.append(img,name);list.appendChild(row);});}
+  function applyList(){if(spinning)return;const parsed=parsePeople(input.value);if(!parsed.length){alert('请至少输入一位参与者。');return;}people=parsed;winners=[];setReelPerson(people[0]);announcement.textContent='好运正在等待你的召唤';renderHistory();updateCounts();}
+  function spin(){if(spinning||!people.some(p=>!p.winner))return;const eligible=people.filter(p=>!p.winner),winner=eligible[Math.floor(Math.random()*eligible.length)];spinning=true;spinButton.textContent='老虎机旋转中…';announcement.textContent='正在为你寻找幸运儿…';updateCounts();let ticks=0,delay=55;function roll(){const pick=eligible[Math.floor(Math.random()*eligible.length)];reel.replaceChildren(entry(pick));reel.style.transition='none';reel.style.transform=`translateY(${Math.random()*12-6}px)`;ticks++;if(ticks<30){if(ticks>18)delay+=22;timer=setTimeout(roll,delay);}else stopOnWinner(winner);}roll();}
+  function stopOnWinner(winner){clearTimeout(timer);timer=null;reel.replaceChildren(entry(winner));const cardHeight=reel.firstElementChild.getBoundingClientRect().height;const frameHeight=frame.clientHeight;const target=(frameHeight-cardHeight)/2;reel.style.transition='transform 1.15s cubic-bezier(.12,.75,.18,1)';reel.style.transform=`translateY(${target}px)`;reel.addEventListener('transitionend',function done(){reel.removeEventListener('transitionend',done);finish(winner);},{once:true});setTimeout(()=>{if(spinning)finish(winner);},1400);}
+  function finish(winner){if(!spinning)return;spinning=false;winner.winner=true;winners.push(winner);spinButton.textContent='再拉一次';announcement.textContent=`🎉 恭喜 ${winner.name}！`;updateCounts();renderHistory();celebrate();document.getElementById('modalAvatar').src=winner.image;document.getElementById('modalAvatar').onerror=()=>{document.getElementById('modalAvatar').onerror=null;document.getElementById('modalAvatar').src=fallback;};document.getElementById('modalName').textContent=winner.name;modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.getElementById('closeModal').focus();}
+  function closeModal(){modal.classList.remove('open');modal.setAttribute('aria-hidden','true');spinButton.focus();}
+  function reset(){clearTimeout(timer);timer=null;spinning=false;people=parsePeople(input.value);winners=[];setReelPerson(people[0]||{name:'好运等你来',image:fallback});spinButton.textContent='拉动摇杆 · 开始抽奖';announcement.textContent='好运正在等待你的召唤';modal.classList.remove('open');modal.setAttribute('aria-hidden','true');renderHistory();updateCounts();}
+  document.getElementById('applyButton').addEventListener('click',applyList);document.getElementById('sampleButton').addEventListener('click',()=>{loadSamples();applyList();});document.getElementById('resetButton').addEventListener('click',reset);spinButton.addEventListener('click',spin);document.getElementById('leverButton').addEventListener('click',spin);document.getElementById('closeModal').addEventListener('click',closeModal);modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('open'))closeModal();});
+  const canvas=document.getElementById('confetti'),ctx=canvas.getContext('2d');let particles=[],raf=0;function resize(){const d=window.devicePixelRatio||1;canvas.width=innerWidth*d;canvas.height=innerHeight*d;ctx.setTransform(d,0,0,d,0,0);}window.addEventListener('resize',resize);resize();function celebrate(){const colors=['#ff65bd','#66eaff','#ffd76a','#a78bfa','#fff'];for(let b=0;b<3;b++){const x=innerWidth*(.2+Math.random()*.6),y=innerHeight*(.12+Math.random()*.3);for(let i=0;i<60;i++){const a=Math.random()*Math.PI*2,s=2+Math.random()*6;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-2,size:3+Math.random()*5,color:colors[Math.floor(Math.random()*colors.length)],life:90});}}if(!raf)animate();}function animate(){ctx.clearRect(0,0,innerWidth,innerHeight);particles=particles.filter(p=>p.life-->0&&p.y<innerHeight+20);for(const p of particles){p.x+=p.vx;p.y+=p.vy;p.vy+=.09;ctx.globalAlpha=Math.min(1,p.life/18);ctx.fillStyle=p.color;ctx.fillRect(p.x,p.y,p.size,p.size*.7);}ctx.globalAlpha=1;if(particles.length)raf=requestAnimationFrame(animate);else{raf=0;ctx.clearRect(0,0,innerWidth,innerHeight);}}
+  loadSamples();people=parsePeople(input.value);setReelPerson(people[0]);renderHistory();updateCounts();
+</script>
+</body>
+</html>
