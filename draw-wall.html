@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#100d2e">
+  <title>星光抽奖 · 照片墙</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #100d2e;
+      --panel: rgba(31, 26, 73, .82);
+      --pink: #ff65bd;
+      --cyan: #66eaff;
+      --gold: #ffd76a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: #fff;
+      font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      background: radial-gradient(ellipse at 50% 15%, rgba(101,63,180,.34), transparent 55%),
+        radial-gradient(circle at 8% 85%, rgba(25,182,221,.14), transparent 30%), var(--bg);
+    }
+    .page { width: min(1180px, 94vw); margin: 0 auto; padding: 34px 0 52px; }
+    header { text-align: center; margin-bottom: 24px; }
+    .eyebrow { color: var(--cyan); letter-spacing: .3em; font-size: 12px; font-weight: 700; }
+    h1 { margin: 9px 0; font-size: clamp(32px, 6vw, 54px); letter-spacing: .1em; text-shadow: 0 0 24px rgba(255,101,189,.5); }
+    .subtitle { color: #c7c1e6; margin: 0; }
+    .panel { border: 1px solid rgba(176,159,255,.2); background: var(--panel); backdrop-filter: blur(14px); border-radius: 20px; box-shadow: 0 18px 60px rgba(0,0,0,.2); }
+    .wall-panel { padding: 20px; }
+    .wall-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .wall-heading h2 { margin: 0; font-size: 17px; }
+    .count { color: #bdb5db; font-size: 13px; }
+    .count strong { color: var(--cyan); }
+    .photo-wall { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 12px; }
+    .person {
+      min-width: 0; position: relative; overflow: hidden; padding: 8px;
+      border: 2px solid rgba(255,255,255,.08); border-radius: 15px;
+      background: rgba(9,7,30,.5); text-align: center;
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, opacity .2s ease;
+    }
+    .person img { width: 100%; aspect-ratio: 1; display: block; object-fit: cover; border-radius: 10px; background: #30285c; }
+    .person-name { display: block; overflow: hidden; margin-top: 7px; color: #e7e2f8; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+    .photo-wall.is-drawing .person { animation: wall-pulse .7s ease-in-out infinite alternate; }
+    @keyframes wall-pulse { from { filter: brightness(.72); } to { filter: brightness(1.18); } }
+    .person.is-active { z-index: 1; transform: scale(1.09); border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(102,234,255,.18), 0 0 26px rgba(102,234,255,.6); }
+    .person.is-winner { z-index: 2; transform: scale(1.13); border-color: var(--gold); box-shadow: 0 0 0 4px rgba(255,215,106,.2), 0 0 36px rgba(255,101,189,.8); animation: winner-pop .55s cubic-bezier(.2,1.8,.4,1) both; }
+    .person.is-winner .person-name { color: var(--gold); font-weight: 800; }
+    .person.is-winner::after { content: "🎉 幸运儿"; position: absolute; top: 5px; left: 50%; transform: translateX(-50%); padding: 4px 8px; border-radius: 999px; background: rgba(46,27,64,.9); color: var(--gold); font-size: 11px; white-space: nowrap; }
+    @keyframes winner-pop { from { scale: .75; } to { scale: 1; } }
+    .person.is-out { opacity: .38; filter: grayscale(.8); }
+    .empty { grid-column: 1 / -1; padding: 34px 12px; color: #928bad; text-align: center; }
+    .controls { display: flex; justify-content: center; align-items: center; gap: 12px; flex-wrap: wrap; margin: 20px 0; }
+    button { font: inherit; cursor: pointer; border: 0; color: #fff; transition: transform .18s, filter .18s, opacity .18s; }
+    button:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.12); }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    .primary { min-width: 170px; padding: 13px 28px; border-radius: 999px; font-weight: 800; letter-spacing: .08em; color: #26123c; background: linear-gradient(100deg,#ffe27e,#ff8ed2); box-shadow: 0 8px 26px rgba(255,101,189,.3); }
+    .secondary { padding: 12px 20px; border-radius: 999px; color: #e5dcff; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15); }
+    .winner-announcement { min-height: 34px; margin: 0; color: var(--gold); font-size: clamp(19px, 3vw, 26px); font-weight: 800; text-align: center; text-shadow: 0 0 18px rgba(255,215,106,.45); }
+    .below { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(260px,.8fr); gap: 16px; margin-top: 18px; }
+    .list-panel, .history-panel { padding: 18px; }
+    .below h2 { margin: 0 0 7px; font-size: 16px; }
+    .help, .note { margin: 0 0 11px; color: #aaa3c9; font-size: 12px; line-height: 1.65; }
+    textarea { width: 100%; min-height: 128px; resize: vertical; border-radius: 11px; border: 1px solid rgba(184,169,255,.25); background: rgba(9,7,30,.55); color: #f5f2ff; padding: 11px; font: 13px/1.8 ui-monospace, SFMono-Regular, Consolas, monospace; outline: none; }
+    textarea:focus { border-color: var(--cyan); }
+    .list-actions { display: flex; gap: 8px; margin-top: 9px; }
+    .list-actions button { padding: 9px 12px; border-radius: 9px; font-size: 12px; background: rgba(116,95,190,.35); }
+    .history { display: flex; flex-direction: column; gap: 7px; max-height: 190px; overflow: auto; }
+    .history-item { display: flex; align-items: center; gap: 9px; color: #ded9f3; font-size: 13px; padding: 6px 8px; background: rgba(255,255,255,.05); border-radius: 10px; }
+    .history-item img { width: 30px; height: 30px; object-fit: cover; border-radius: 50%; }
+    .muted { color: #847da5; font-size: 12px; }
+    #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+    @media (max-width: 700px) { .below { grid-template-columns: 1fr; } .photo-wall { grid-template-columns: repeat(auto-fill,minmax(82px,1fr)); gap: 8px; } .person { padding: 6px; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+  <main class="page">
+    <header>
+      <div class="eyebrow">LUCKY DRAW · PHOTO WALL</div>
+      <h1>照片墙抽奖</h1>
+      <p class="subtitle">所有参与者同时登场，闪动照片墙揭晓幸运儿</p>
+    </header>
+
+    <section class="panel wall-panel" aria-label="参与者照片墙">
+      <div class="wall-heading">
+        <h2>参与者照片墙</h2>
+        <div class="count">待抽 <strong id="remainingCount">0</strong> 人 · 已中奖 <strong id="winnerCount">0</strong> 人</div>
+      </div>
+      <div class="photo-wall" id="photoWall" aria-live="polite"></div>
+    </section>
+
+    <div class="controls">
+      <button class="primary" id="drawButton" type="button">开始抽奖</button>
+      <button class="secondary" id="resetButton" type="button">重置抽奖</button>
+    </div>
+    <p class="winner-announcement" id="winnerAnnouncement" aria-live="assertive">好运即将揭晓</p>
+
+    <div class="below">
+      <section class="panel list-panel">
+        <h2>参与名单</h2>
+        <p class="help">每行一位参与者，可写成「姓名,头像网址」。不填网址会自动分配网络头像。</p>
+        <textarea id="participants" aria-label="参与者名单" spellcheck="false"></textarea>
+        <div class="list-actions">
+          <button type="button" id="applyButton">更新名单</button>
+          <button type="button" id="sampleButton">载入示例</button>
+        </div>
+        <p class="note">头像需联网加载。抽中的参与者会保留在照片墙并标记为中奖，不再参与本轮抽取。</p>
+      </section>
+      <section class="panel history-panel">
+        <h2>中奖名单</h2>
+        <div class="history" id="history"><div class="muted">中奖结果会显示在这里</div></div>
+      </section>
+    </div>
+  </main>
+<script>
+  const samplePeople = [
+    ['林小满', 'women/44'], ['陈星宇', 'men/32'], ['周可欣', 'women/68'],
+    ['王子涵', 'men/75'], ['苏念', 'women/12'], ['赵一鸣', 'men/46'],
+    ['许安然', 'women/23'], ['顾明远', 'men/18'], ['沈知夏', 'women/55'],
+    ['陆景行', 'men/61'], ['唐果果', 'women/39'], ['程予安', 'men/84']
+  ];
+  const fallbackAvatar = 'https://randomuser.me/api/portraits/lego/1.jpg';
+  const participantsInput = document.getElementById('participants');
+  const photoWall = document.getElementById('photoWall');
+  const drawButton = document.getElementById('drawButton');
+  const announcement = document.getElementById('winnerAnnouncement');
+  const history = document.getElementById('history');
+  let people = [];
+  let winners = [];
+  let drawing = false;
+  let drawTimer = null;
+  let activeIndex = -1;
+
+  function loadSampleText() {
+    participantsInput.value = samplePeople.map(([name, path]) => `${name},https://randomuser.me/api/portraits/${path}.jpg`).join('\n');
+  }
+  function makePeople(text) {
+    const seen = new Set();
+    return text.split(/\r?\n/).map((line, index) => {
+      const parts = line.split(',');
+      const name = (parts.shift() || '').trim();
+      const image = parts.join(',').trim();
+      if (!name || seen.has(name)) return null;
+      seen.add(name);
+      return { name, image: image || `https://i.pravatar.cc/160?img=${(index % 70) + 1}`, winner: false };
+    }).filter(Boolean);
+  }
+  function updateCounts() {
+    document.getElementById('remainingCount').textContent = people.filter(person => !person.winner).length;
+    document.getElementById('winnerCount').textContent = winners.length;
+    drawButton.disabled = drawing || !people.some(person => !person.winner);
+  }
+  function renderWall() {
+    photoWall.replaceChildren();
+    if (!people.length) {
+      const empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.textContent = '请添加参与者，照片墙将在这里显示';
+      photoWall.appendChild(empty);
+      return;
+    }
+    people.forEach((person, index) => {
+      const card = document.createElement('div');
+      card.className = 'person';
+      if (person.winner) card.classList.add('is-winner');
+      else if (activeIndex === index && drawing) card.classList.add('is-active');
+      if (person.winner && drawing) card.classList.add('is-out');
+      const image = document.createElement('img');
+      image.src = person.image;
+      image.alt = `${person.name}的头像`;
+      image.loading = 'lazy';
+      image.onerror = () => { image.onerror = null; image.src = fallbackAvatar; };
+      const label = document.createElement('span');
+      label.className = 'person-name';
+      label.textContent = person.name;
+      card.append(image, label);
+      photoWall.appendChild(card);
+    });
+    photoWall.classList.toggle('is-drawing', drawing);
+  }
+  function renderHistory() {
+    history.replaceChildren();
+    if (!winners.length) {
+      const empty = document.createElement('div');
+      empty.className = 'muted';
+      empty.textContent = '中奖结果会显示在这里';
+      history.appendChild(empty);
+      return;
+    }
+    [...winners].reverse().forEach(person => {
+      const row = document.createElement('div');
+      row.className = 'history-item';
+      const image = document.createElement('img');
+      image.src = person.image;
+      image.alt = '';
+      image.onerror = () => { image.onerror = null; image.src = fallbackAvatar; };
+      const label = document.createElement('span');
+      label.textContent = person.name;
+      row.append(image, label);
+      history.appendChild(row);
+    });
+  }
+  function applyList() {
+    if (drawing) return;
+    const parsed = makePeople(participantsInput.value);
+    if (!parsed.length) { alert('请至少输入一位参与者。'); return; }
+    people = parsed;
+    winners = [];
+    activeIndex = -1;
+    announcement.textContent = '好运即将揭晓';
+    renderWall();
+    renderHistory();
+    updateCounts();
+  }
+  function startDraw() {
+    if (drawing || !people.some(person => !person.winner)) return;
+    drawing = true;
+    announcement.textContent = '幸运正在照片墙中穿梭…';
+    drawButton.textContent = '抽奖中…';
+    updateCounts();
+    const eligible = people.map((person, index) => person.winner ? -1 : index).filter(index => index >= 0);
+    let ticks = 0;
+    let delay = 65;
+    function tick() {
+      activeIndex = eligible[Math.floor(Math.random() * eligible.length)];
+      renderWall();
+      ticks += 1;
+      if (ticks < 32) {
+        delay += ticks > 20 ? 22 : 0;
+        drawTimer = setTimeout(tick, delay);
+      } else finishDraw(eligible[Math.floor(Math.random() * eligible.length)]);
+    }
+    tick();
+  }
+  function finishDraw(index) {
+    clearTimeout(drawTimer);
+    drawTimer = null;
+    const winner = people[index];
+    winner.winner = true;
+    winners.push(winner);
+    drawing = false;
+    activeIndex = index;
+    drawButton.textContent = '再抽一位';
+    announcement.textContent = `🎉 恭喜 ${winner.name}，成为��轮幸运儿！`;
+    renderWall();
+    renderHistory();
+    updateCounts();
+    celebrate();
+  }
+  function resetDraw() {
+    if (drawing) { clearTimeout(drawTimer); drawTimer = null; drawing = false; }
+    people = makePeople(participantsInput.value);
+    winners = [];
+    activeIndex = -1;
+    drawButton.textContent = '开始抽奖';
+    announcement.textContent = '好运即将揭晓';
+    renderWall();
+    renderHistory();
+    updateCounts();
+  }
+  document.getElementById('applyButton').addEventListener('click', applyList);
+  document.getElementById('sampleButton').addEventListener('click', () => { loadSampleText(); applyList(); });
+  drawButton.addEventListener('click', startDraw);
+  document.getElementById('resetButton').addEventListener('click', resetDraw);
+
+  const canvas = document.getElementById('confetti');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let animationFrame = 0;
+  function resizeCanvas() {
+    const ratio = window.devicePixelRatio || 1;
+    canvas.width = window.innerWidth * ratio;
+    canvas.height = window.innerHeight * ratio;
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+  function celebrate() {
+    const colors = ['#ff65bd', '#66eaff', '#ffd76a', '#a78bfa', '#ffffff', '#75f0a8'];
+    for (let burst = 0; burst < 3; burst++) {
+      const originX = window.innerWidth * (.2 + Math.random() * .6);
+      const originY = window.innerHeight * (.15 + Math.random() * .35);
+      for (let i = 0; i < 65; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 2 + Math.random() * 6;
+        particles.push({ x: originX, y: originY, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 2,
+          size: 3 + Math.random() * 5, color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 6, spin: (Math.random() - .5) * .25, life: 75 + Math.random() * 35 });
+      }
+    }
+    if (!animationFrame) animateConfetti();
+  }
+  function animateConfetti() {
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    particles = particles.filter(p => p.life > 0 && p.y < window.innerHeight + 20);
+    for (const p of particles) {
+      p.x += p.vx; p.y += p.vy; p.vy += .09; p.vx *= .99; p.rotation += p.spin; p.life--;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rotation);
+      ctx.globalAlpha = Math.min(1, p.life / 18); ctx.fillStyle = p.color;
+      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * .68); ctx.restore();
+    }
+    if (particles.length) animationFrame = requestAnimationFrame(animateConfetti);
+    else { cancelAnimationFrame(animationFrame); animationFrame = 0; ctx.clearRect(0, 0, window.innerWidth, window.innerHeight); }
+  }
+
+  loadSampleText();
+  people = makePeople(participantsInput.value);
+  renderWall();
+  renderHistory();
+  updateCounts();
+</script>
+</body>
+</html>
