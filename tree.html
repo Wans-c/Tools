@@ -2,521 +2,261 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#eef5ea" />
-  <title>树的故事</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#fffefa" />
+  <meta name="description" content="一棵充满可能性的树。" />
+  <title>树的故事 · 无限可能</title>
   <style>
     :root {
-      --bg: #edf4eb;
-      --panel: rgba(255, 255, 255, 0.45);
-      --panel-border: rgba(67, 92, 62, 0.18);
-      --text: #29412d;
-      --muted: rgba(41, 65, 45, 0.7);
-      --shadow: rgba(32, 56, 34, 0.12);
-      --spring: #6ea746;
-      --summer: #3e8d54;
-      --autumn: #c76d3f;
-      --winter: #899aa8;
+      color-scheme: light;
+      --paper: #fffefa;
+      --ink: #48443c;
+      --muted: #9b968b;
     }
-
     * { box-sizing: border-box; }
-
-    html, body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-
+    html, body { width: 100%; height: 100%; margin: 0; }
     body {
       overflow: hidden;
-      background:
-        radial-gradient(circle at 18% 16%, rgba(255,255,255,0.8), transparent 18%),
-        linear-gradient(180deg, #f5f8f3 0%, #eaf3e9 36%, #edf4eb 100%);
+      color: var(--ink);
+      background: var(--paper);
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
-
-    .scene {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      user-select: none;
-    }
-
-    canvas {
+    .scene { position: relative; width: 100%; height: 100%; min-height: 420px; overflow: hidden; }
+    canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+    .caption {
       position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      display: block;
-      background: transparent;
-    }
-
-    .hud {
-      position: absolute;
-      inset: 20px 24px auto 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      pointer-events: none;
-      z-index: 2;
-    }
-
-    .brand {
-      display: inline-flex;
-      flex-direction: column;
-      gap: 8px;
-      pointer-events: auto;
-    }
-
-    .eyebrow {
-      font-size: 10px;
-      letter-spacing: 0.32em;
-      color: rgba(41, 65, 45, 0.72);
-      text-transform: uppercase;
-      font-weight: 700;
-    }
-
-    h1 {
+      z-index: 1;
+      top: 76%;
+      left: 50%;
+      width: min(90%, 680px);
       margin: 0;
-      font-size: clamp(26px, 4vw, 46px);
-      line-height: 1;
-      letter-spacing: 0.08em;
-      font-weight: 800;
+      transform: translateX(-50%);
+      color: #48443c;
+      text-align: center;
+      font-family: "Comic Sans MS", "Bradley Hand", "Segoe Print", cursive;
+      font-size: clamp(17px, 2.2vw, 23px);
+      font-weight: 500;
+      letter-spacing: .045em;
+      line-height: 1.5;
+      text-shadow: 0 1px 0 rgba(255,255,255,.7);
     }
-
-    .controls {
-      display: flex;
-      gap: 8px;
-      pointer-events: auto;
-      padding: 8px;
-      border: 1px solid var(--panel-border);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.34);
-      backdrop-filter: blur(12px);
-      box-shadow: 0 10px 28px var(--shadow);
+    .caption span { display: block; margin-top: 5px; font: 13px/1.5 "PingFang SC", "Microsoft YaHei", sans-serif; color: #aaa59a; letter-spacing: .2em; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    @media (max-height: 560px) {
+      .caption { top: 78%; font-size: clamp(15px, 2.7vh, 20px); }
     }
-
-    .season {
-      border: 0;
-      background: transparent;
-      color: var(--text);
-      font: inherit;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      padding: 10px 14px;
-      border-radius: 999px;
-      cursor: pointer;
-      transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .season:hover,
-    .season:focus-visible {
-      background: rgba(255,255,255,0.7);
-      outline: none;
-      transform: translateY(-1px);
-    }
-
-    .season.active {
-      background: linear-gradient(180deg, rgba(87, 138, 77, 0.18), rgba(120, 160, 103, 0.05));
-      box-shadow: inset 0 0 0 1px rgba(45, 86, 49, 0.12);
-    }
-
-    .footer {
-      position: absolute;
-      inset: auto 24px 18px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: end;
-      gap: 16px;
-      z-index: 2;
-      pointer-events: none;
-    }
-
-    .status {
-      padding: 9px 14px;
-      border: 1px solid rgba(56, 74, 58, 0.15);
-      border-radius: 16px;
-      background: rgba(255,255,255,0.3);
-      backdrop-filter: blur(8px);
-      font-size: 12px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: var(--muted);
-      pointer-events: auto;
-    }
-
-    .hint {
-      text-align: right;
-      color: rgba(41, 65, 45, 0.74);
-      font-size: 12px;
-      line-height: 1.7;
-      letter-spacing: 0.08em;
-      pointer-events: auto;
-    }
-
-    @media (max-width: 640px) {
-      .hud {
-        inset: 16px 14px auto 14px;
-      }
-
-      .controls {
-        gap: 4px;
-        padding: 6px;
-      }
-
-      .season {
-        font-size: 11px;
-        padding: 8px 10px;
-      }
-
-      .footer {
-        inset: auto 14px 14px 14px;
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .hint {
-        text-align: left;
-      }
-    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; } }
   </style>
 </head>
 <body>
-  <div class="scene" aria-label="动态树木场景">
-    <canvas id="view"></canvas>
-
-    <div class="hud">
-      <div class="brand">
-        <div class="eyebrow">A Quiet Tree</div>
-        <h1>树的故事</h1>
-      </div>
-
-      <div class="controls" aria-label="季节切换">
-        <button class="season active" type="button" data-season="spring">春</button>
-        <button class="season" type="button" data-season="summer">夏</button>
-        <button class="season" type="button" data-season="autumn">秋</button>
-        <button class="season" type="button" data-season="winter">冬</button>
-      </div>
-    </div>
-
-    <div class="footer">
-      <div class="status" id="status">spring · 新芽初长</div>
-      <div class="hint">点击画面吹一口风<br />或使用方向键轻轻漫游</div>
-    </div>
-  </div>
-
+  <main class="scene" aria-label="手绘风格的绿树与一颗粉色爱心">
+    <canvas id="painting" aria-hidden="true"></canvas>
+    <h1 class="sr-only">树的故事</h1>
+    <p class="caption">Life is a tree full of possibilities.<span>生命如树，充满无限可能</span></p>
+  </main>
   <script>
     (() => {
-      const canvas = document.getElementById('view');
+      'use strict';
+      const canvas = document.getElementById('painting');
       const ctx = canvas.getContext('2d');
-      const status = document.getElementById('status');
-      const seasonButtons = [...document.querySelectorAll('.season')];
-
-      const seasons = {
-        spring: {
-          name: 'spring',
-          label: 'spring · 新芽初长',
-          skyTop: '#f7f5eb',
-          skyMid: '#edf5d4',
-          skyBottom: '#d7e8b4',
-          sun: '#f4d96d',
-          sunHalo: 'rgba(255, 214, 96, 0.45)',
-          trunk: '#7c5639',
-          trunkSoft: '#a7784e',
-          leafA: '#9bd16d',
-          leafB: '#6aac54',
-          leafC: '#4f8d45',
-          grass: '#6f9f53',
-          mist: 'rgba(255,255,255,0.4)'
-        },
-        summer: {
-          name: 'summer',
-          label: 'summer · 夏风轻拂',
-          skyTop: '#edf7ff',
-          skyMid: '#d9edf8',
-          skyBottom: '#c7dcc7',
-          sun: '#ffd56a',
-          sunHalo: 'rgba(255, 213, 106, 0.38)',
-          trunk: '#7f5638',
-          trunkSoft: '#a47d52',
-          leafA: '#b9dd61',
-          leafB: '#8ac15d',
-          leafC: '#5d9b49',
-          grass: '#6ea15d',
-          mist: 'rgba(250,255,255,0.42)'
-        },
-        autumn: {
-          name: 'autumn',
-          label: 'autumn · 金叶铺地',
-          skyTop: '#f7eee0',
-          skyMid: '#efd8b7',
-          skyBottom: '#e2b68b',
-          sun: '#f5b04f',
-          sunHalo: 'rgba(245, 176, 79, 0.35)',
-          trunk: '#77553c',
-          trunkSoft: '#9f7151',
-          leafA: '#efb04d',
-          leafB: '#d77d3d',
-          leafC: '#b65f36',
-          grass: '#9a7a4d',
-          mist: 'rgba(255,255,255,0.2)'
-        },
-        winter: {
-          name: 'winter',
-          label: 'winter · 霜白静好',
-          skyTop: '#eef3f7',
-          skyMid: '#dfe9f1',
-          skyBottom: '#c9d7e3',
-          sun: '#e6edf3',
-          sunHalo: 'rgba(230,237,243,0.28)',
-          trunk: '#6d7b84',
-          trunkSoft: '#8a9ba5',
-          leafA: '#b8c9cf',
-          leafB: '#9eb2bd',
-          leafC: '#7b909f',
-          grass: '#a0b1b8',
-          mist: 'rgba(255,255,255,0.35)'
-        }
-      };
-
-      const state = {
-        season: 'spring',
-        width: 0,
-        height: 0,
-        dpr: 1,
-        t: 0,
-        drift: 0,
-        sway: 0,
-        wind: 0,
+      const scene = document.querySelector('.scene');
+      const TAU = Math.PI * 2;
+      let width = 0;
+      let height = 0;
+      let dpr = 1;
+      let time = 0;
+      let leaves = [];
+      let seed = 74123;
+      const random = () => {
+        seed = (seed * 1664525 + 1013904223) >>> 0;
+        return seed / 4294967296;
       };
 
       function resize() {
-        const rect = canvas.getBoundingClientRect();
-        state.width = rect.width;
-        state.height = rect.height;
-        state.dpr = Math.min(window.devicePixelRatio || 1, 2);
-        canvas.width = Math.max(1, Math.round(state.width * state.dpr));
-        canvas.height = Math.max(1, Math.round(state.height * state.dpr));
-        ctx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
+        const rect = scene.getBoundingClientRect();
+        width = rect.width;
+        height = rect.height;
+        dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+        canvas.width = Math.max(1, Math.round(width * dpr));
+        canvas.height = Math.max(1, Math.round(height * dpr));
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        makeLeaves();
       }
 
-      function setSeason(season) {
-        if (!seasons[season]) return;
-        state.season = season;
-        status.textContent = seasons[season].label;
-        seasonButtons.forEach((button) => {
-          const active = button.dataset.season === season;
-          button.classList.toggle('active', active);
-          button.setAttribute('aria-pressed', String(active));
+      function makeLeaves() {
+        seed = 74123;
+        const amount = Math.max(12, Math.min(24, Math.round(width / 48)));
+        leaves = Array.from({ length: amount }, () => ({
+          x: width * (.27 + random() * .46),
+          y: height * (.08 + random() * .49),
+          phase: random() * TAU,
+          size: 2 + random() * 3,
+          speed: .3 + random() * .55
+        }));
+      }
+
+      function dab(x, y, rx, ry, color, angle = 0, alpha = 1) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, Math.max(.5, rx), Math.max(.5, ry), 0, 0, TAU);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function stroke(points, color, lineWidth, alpha = 1) {
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = lineWidth;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(points[0][0], points[0][1]);
+        for (let i = 1; i < points.length; i++) ctx.lineTo(points[i][0], points[i][1]);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawGround(cx, base, scale) {
+        const green = ['#83c83e', '#9bd744', '#72b938', '#b0dc56'];
+        for (let i = 0; i < 38; i++) {
+          const x = cx + (random() - .5) * 2.25 * scale;
+          const y = base + (random() - .5) * 15 * scale;
+          dab(x, y, (9 + random() * 20) * scale, (1.3 + random() * 2.5) * scale,
+            green[i % green.length], (random() - .5) * .12, .7 + random() * .25);
+        }
+        stroke([[cx - 1.05 * scale, base + 5 * scale], [cx - .48 * scale, base + 8 * scale], [cx + .12 * scale, base + 7 * scale], [cx + .9 * scale, base + 4 * scale]], '#78b638', 2.5 * scale, .8);
+      }
+
+      function drawTree(cx, base, scale) {
+        const trunkTop = base - 205 * scale;
+        const canopyTop = base - 420 * scale;
+        const canopyBottom = base - 105 * scale;
+
+        // A loose, hand-painted canopy made from layered brush dabs.
+        const greens = ['#63b53f', '#72c642', '#84d23e', '#9cda27', '#a8df31', '#55aa3b', '#c2e649'];
+        const canopyWidth = 210 * scale;
+        const canopyHeight = 165 * scale;
+        for (let layer = 0; layer < 5; layer++) {
+          const count = 64 - layer * 5;
+          for (let i = 0; i < count; i++) {
+            const angle = random() * TAU;
+            const radius = Math.sqrt(random());
+            const x = cx + Math.cos(angle) * radius * canopyWidth;
+            const y = canopyTop + canopyHeight * .52 + Math.sin(angle) * radius * canopyHeight;
+            const size = (9 + random() * 17) * scale;
+            const color = greens[Math.floor(random() * greens.length)];
+            dab(x, y, size * (.72 + random() * .45), size * (.48 + random() * .4), color,
+              (random() - .5) * .8, .76 + random() * .22);
+          }
+        }
+
+        // Branches peek through the foliage.
+        const bark = ['#725235', '#896442', '#9b744b', '#5f4935'];
+        const branches = [
+          [[cx, base - 10 * scale], [cx - 11 * scale, base - 88 * scale], [cx - 43 * scale, base - 151 * scale], [cx - 96 * scale, base - 191 * scale]],
+          [[cx - 18 * scale, base - 115 * scale], [cx - 74 * scale, base - 143 * scale], [cx - 127 * scale, base - 148 * scale]],
+          [[cx - 25 * scale, base - 143 * scale], [cx - 37 * scale, base - 218 * scale], [cx - 70 * scale, base - 259 * scale]],
+          [[cx - 2 * scale, base - 138 * scale], [cx + 45 * scale, base - 180 * scale], [cx + 100 * scale, base - 196 * scale]],
+          [[cx + 35 * scale, base - 174 * scale], [cx + 57 * scale, base - 229 * scale], [cx + 99 * scale, base - 258 * scale]],
+          [[cx + 3 * scale, base - 108 * scale], [cx + 76 * scale, base - 140 * scale], [cx + 127 * scale, base - 148 * scale]],
+          [[cx + 8 * scale, base - 178 * scale], [cx + 1 * scale, base - 250 * scale], [cx + 25 * scale, base - 293 * scale]]
+        ];
+        branches.forEach((branch, i) => stroke(branch.map(([x, y]) => [x, y]), bark[i % bark.length], (5 - (i % 3)) * scale, .72));
+
+        // A softly irregular trunk, layered with short painterly marks.
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(cx - 16 * scale, base + 1 * scale);
+        ctx.quadraticCurveTo(cx - 5 * scale, base - 65 * scale, cx - 21 * scale, trunkTop + 40 * scale);
+        ctx.quadraticCurveTo(cx - 8 * scale, trunkTop + 7 * scale, cx + 7 * scale, trunkTop);
+        ctx.quadraticCurveTo(cx + 18 * scale, trunkTop + 49 * scale, cx + 20 * scale, base - 60 * scale);
+        ctx.quadraticCurveTo(cx + 31 * scale, base - 22 * scale, cx + 51 * scale, base - 4 * scale);
+        ctx.quadraticCurveTo(cx + 25 * scale, base + 5 * scale, cx, base + 1 * scale);
+        ctx.closePath();
+        const trunk = ctx.createLinearGradient(cx - 22 * scale, 0, cx + 37 * scale, 0);
+        trunk.addColorStop(0, '#9c7a4d');
+        trunk.addColorStop(.38, '#715538');
+        trunk.addColorStop(.72, '#856443');
+        trunk.addColorStop(1, '#5e4934');
+        ctx.fillStyle = trunk;
+        ctx.fill();
+        ctx.restore();
+
+        for (let i = 0; i < 45; i++) {
+          const x = cx + (random() - .1) * 38 * scale;
+          const y = trunkTop + random() * (base - trunkTop);
+          dab(x, y, (1 + random() * 3) * scale, (3 + random() * 10) * scale,
+            i % 2 ? '#c1a06a' : '#514432', (random() - .5) * .25, .24 + random() * .3);
+        }
+
+        // Root strokes anchor the tree to the little patch of grass.
+        stroke([[cx - 28 * scale, base - 5 * scale], [cx - 11 * scale, base + 1 * scale], [cx + 5 * scale, base - 3 * scale], [cx + 27 * scale, base + 2 * scale]], '#725537', 5 * scale, .9);
+
+        // Bright highlights on the leaf clusters give a watercolor/impasto feel.
+        for (let i = 0; i < 53; i++) {
+          const angle = random() * TAU;
+          const r = Math.sqrt(random());
+          const x = cx + Math.cos(angle) * r * canopyWidth * .92;
+          const y = canopyTop + canopyHeight * .52 + Math.sin(angle) * r * canopyHeight * .9;
+          dab(x, y, (4 + random() * 8) * scale, (3 + random() * 7) * scale,
+            i % 3 ? '#c5e94a' : '#d5ed56', (random() - .5) * .7, .7);
+        }
+      }
+
+      function drawHeart(x, y, size, alpha) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(-.16 + Math.sin(time * .001) * .035);
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = '#f6c6c5';
+        ctx.beginPath();
+        ctx.moveTo(0, size * .42);
+        ctx.bezierCurveTo(-size * .14, size * .29, -size * .62, size * .05, -size * .43, -size * .25);
+        ctx.bezierCurveTo(-size * .29, -size * .48, -size * .04, -size * .34, 0, -size * .16);
+        ctx.bezierCurveTo(size * .13, -size * .46, size * .45, -size * .4, size * .5, -size * .12);
+        ctx.bezierCurveTo(size * .56, size * .12, size * .19, size * .35, 0, size * .42);
+        ctx.fill();
+        dab(-size * .26, -size * .08, size * .1, size * .035, '#f3aaaa', -.55, .55);
+        dab(size * .26, size * .09, size * .13, size * .04, '#f3aaaa', .5, .45);
+        ctx.fillStyle = '#53473e';
+        ctx.beginPath();
+        ctx.arc(-size * .23, -size * .01, Math.max(1, size * .018), 0, TAU);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function drawFloatingLeaves() {
+        const palette = ['#a8dc34', '#8dce36', '#d2e94e'];
+        leaves.forEach((leaf) => {
+          const x = leaf.x + Math.sin(time * .00035 + leaf.phase) * 7;
+          const y = leaf.y + Math.sin(time * .0005 * leaf.speed + leaf.phase) * 5;
+          dab(x, y, leaf.size * 1.3, leaf.size * .7, palette[Math.floor(leaf.phase * 3) % palette.length], leaf.phase, .78);
         });
       }
 
-      function pickColor(from, to, ratio) {
-        const a = from.match(/\w\w/g).map(v => parseInt(v, 16));
-        const b = to.match(/\w\w/g).map(v => parseInt(v, 16));
-        const out = a.map((v, i) => Math.round(v + (b[i] - v) * ratio));
-        return `rgb(${out[0]}, ${out[1]}, ${out[2]})`;
-      }
-
-      function drawSky(palette) {
-        const sky = ctx.createLinearGradient(0, 0, 0, state.height);
-        sky.addColorStop(0, palette.skyTop);
-        sky.addColorStop(0.55, palette.skyMid);
-        sky.addColorStop(1, palette.skyBottom);
-        ctx.fillStyle = sky;
-        ctx.fillRect(0, 0, state.width, state.height);
-
-        const sunX = state.width * 0.72;
-        const sunY = state.height * 0.22;
-        const sunR = Math.min(state.width, state.height) * 0.11;
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2);
-        ctx.fillStyle = palette.sunHalo;
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(sunX, sunY, sunR * 0.72, 0, Math.PI * 2);
-        ctx.fillStyle = palette.sun;
-        ctx.fill();
-        ctx.restore();
-
-        for (let i = 0; i < 5; i++) {
-          const x = (i * 220 + state.t * 0.04 + 50) % (state.width + 300) - 150;
-          const y = 90 + i * 26 + Math.sin(state.t * 0.0008 + i) * 12;
-          ctx.fillStyle = palette.mist;
-          ctx.beginPath();
-          ctx.ellipse(x, y, 75, 20, 0, 0, Math.PI * 2);
-          ctx.ellipse(x + 60, y + 10, 80, 22, 0, 0, Math.PI * 2);
-          ctx.ellipse(x - 70, y + 8, 82, 20, 0, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-
-      function drawGround(palette) {
-        const groundY = state.height * 0.82;
-        const hill = ctx.createLinearGradient(0, groundY, 0, state.height);
-        hill.addColorStop(0, palette.grass);
-        hill.addColorStop(1, '#e8eee5');
-        ctx.fillStyle = hill;
-        ctx.fillRect(0, groundY, state.width, state.height - groundY);
-
-        ctx.beginPath();
-        ctx.moveTo(0, groundY);
-        ctx.quadraticCurveTo(state.width * 0.2, groundY - 40, state.width * 0.45, groundY + 20);
-        ctx.quadraticCurveTo(state.width * 0.72, groundY - 36, state.width, groundY + 10);
-        ctx.lineTo(state.width, state.height);
-        ctx.lineTo(0, state.height);
-        ctx.closePath();
-        ctx.fillStyle = 'rgba(255,255,255,0.12)';
-        ctx.fill();
-
-        for (let i = 0; i < 18; i++) {
-          const x = (i * 97 + (state.t * 0.02)) % (state.width + 80) - 40;
-          const y = groundY + 18 + (i % 4) * 5;
-          ctx.fillStyle = i % 2 ? 'rgba(40,64,43,0.08)' : 'rgba(25,50,34,0.06)';
-          ctx.fillRect(x, y, 18, 2 + (i % 3));
-        }
-      }
-
-      function drawBranch(x1, y1, length, angle, depth, palette) {
-        if (depth <= 0 || length < 10) return;
-
-        const x2 = x1 + Math.cos(angle) * length;
-        const y2 = y1 + Math.sin(angle) * length;
-
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.lineWidth = Math.max(1.2, depth * 2.1);
-        ctx.strokeStyle = palette.trunk;
-        ctx.lineCap = 'round';
-        ctx.shadowBlur = 0;
-        ctx.stroke();
-
-        const fork = 0.68 + Math.sin(state.t * 0.001 + x1 * 0.02) * 0.14;
-        const spread = 0.46 + depth * 0.1;
-
-        drawBranch(x2, y2, length * fork, angle - spread + state.wind, depth - 1, palette);
-        drawBranch(x2, y2, length * fork, angle + spread + state.wind, depth - 1, palette);
-
-        if (depth <= 2) {
-          const leafCount = 4 + Math.floor(depth * 3);
-          for (let i = 0; i < leafCount; i++) {
-            const lx = x2 + Math.cos(angle + (i - leafCount / 2) * 0.28) * (12 + depth * 4);
-            const ly = y2 + Math.sin(angle + (i - leafCount / 2) * 0.28) * (12 + depth * 4);
-            const radius = 10 + Math.sin((lx + ly) * 0.08 + state.t * 0.003) * 4;
-            ctx.beginPath();
-            ctx.fillStyle = i % 3 === 0 ? palette.leafA : i % 3 === 1 ? palette.leafB : palette.leafC;
-            ctx.arc(lx, ly, radius * 0.5, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
-      }
-
-      function drawTree(palette) {
-        const trunkBaseX = state.width * 0.52;
-        const trunkBaseY = state.height * 0.8;
-        const trunkHeight = state.height * 0.33;
-
-        ctx.save();
-        ctx.translate(trunkBaseX, trunkBaseY);
-        ctx.rotate(state.sway * 0.06);
-
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(0, -trunkHeight);
-        ctx.strokeStyle = palette.trunkSoft;
-        ctx.lineWidth = 18;
-        ctx.lineCap = 'round';
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(0, -trunkHeight * 0.2);
-        ctx.lineTo(0, -trunkHeight);
-        ctx.strokeStyle = palette.trunk;
-        ctx.lineWidth = 12;
-        ctx.lineCap = 'round';
-        ctx.stroke();
-
-        const rootA = 0.7;
-        const rootB = 1.1;
-        drawBranch(0, -trunkHeight * 0.9, 76, -Math.PI / 2 + rootA + state.wind, 5, palette);
-        drawBranch(0, -trunkHeight * 0.75, 82, -Math.PI / 2 - rootB + state.wind, 5, palette);
-        drawBranch(0, -trunkHeight * 0.55, 84, -Math.PI / 2 + 0.3 + state.wind * 0.7, 5, palette);
-        drawBranch(0, -trunkHeight * 0.35, 68, -Math.PI / 2 - 0.8 + state.wind * 0.5, 4, palette);
-
-        ctx.restore();
-
-        const canopyY = trunkBaseY - trunkHeight * 1.02;
-        for (let i = 0; i < 11; i++) {
-          const x = trunkBaseX + (i - 5) * 18 + Math.sin(state.t * 0.0016 + i) * 10;
-          const y = canopyY + (i % 3) * 22 - 18;
-          const radius = 18 + (i % 5) * 6;
-          ctx.beginPath();
-          ctx.fillStyle = i % 3 === 0 ? palette.leafA : i % 3 === 1 ? palette.leafB : palette.leafC;
-          ctx.globalAlpha = 0.82;
-          ctx.arc(x, y, radius, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.globalAlpha = 1;
-      }
-
-      function drawLeaves(palette) {
-        const count = 48;
-        for (let i = 0; i < count; i++) {
-          const angle = (i / count) * Math.PI * 2 + state.t * 0.0007;
-          const radius = 100 + (i * 13) % 260;
-          const x = state.width * 0.5 + Math.cos(angle) * radius * 0.7 + Math.sin(state.t * 0.0014 + i) * 18;
-          const y = state.height * 0.76 + Math.sin(angle * 1.7 + state.t * 0.001) * 20 + (i % 5) * 10;
-          const leaf = i % 3 === 0 ? palette.leafA : i % 3 === 1 ? palette.leafB : palette.leafC;
-          ctx.fillStyle = leaf;
-          ctx.beginPath();
-          ctx.ellipse(x, y, 8, 5, angle * 0.6, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-
       function render(ts) {
-        state.t = ts;
-        state.wind = Math.sin(ts * 0.0016) * 0.65;
-        state.sway = Math.sin(ts * 0.0012) * 1.8;
+        time = ts;
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#fffefa';
+        ctx.fillRect(0, 0, width, height);
 
-        const palette = seasons[state.season];
-        ctx.clearRect(0, 0, state.width, state.height);
-        drawSky(palette);
-        drawGround(palette);
-        drawLeaves(palette);
-        drawTree(palette);
-
+        const scale = Math.min(width / 720, height / 720, 1.2);
+        const cx = width * .5;
+        const base = height * .69;
+        drawGround(cx, base, scale);
+        drawTree(cx, base, scale);
+        drawFloatingLeaves();
+        drawHeart(width * .76, height * .14, 53 * scale, .92);
         requestAnimationFrame(render);
       }
 
-      function handlePointerMove(event) {
-        const x = event.clientX / state.width;
-        const offset = (x - 0.5) * 2;
-        state.sway = offset * 1.7;
-      }
-
-      function handleKeydown(event) {
-        const key = event.key.toLowerCase();
-        if (key === 'arrowleft' || key === 'a') state.sway = -1.6;
-        if (key === 'arrowright' || key === 'd') state.sway = 1.6;
-      }
-
-      seasonButtons.forEach((button) => {
-        button.addEventListener('click', () => setSeason(button.dataset.season));
-      });
-
-      window.addEventListener('pointermove', handlePointerMove);
-      window.addEventListener('keydown', handleKeydown);
       window.addEventListener('resize', resize);
-
       resize();
       requestAnimationFrame(render);
     })();
