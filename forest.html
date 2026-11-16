@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101710">
+  <meta name="description" content="走进静谧森林，沿着蜿蜒小路自由探索。">
+  <title>林间 · 一场无尽的漫步</title>
+  <link rel="preconnect" href="https://images.unsplash.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Noto+Serif+SC:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{color-scheme:dark;--cream:#f2efe5;--muted:rgba(242,239,229,.67);--serif:'Noto Serif SC',Georgia,serif;--sans:'DM Sans',sans-serif}
+    *{box-sizing:border-box}
+    html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#18231a;color:var(--cream)}
+    body{font-family:var(--sans);-webkit-font-smoothing:antialiased;user-select:none}
+    .scene{position:fixed;inset:-3%;overflow:hidden;cursor:crosshair;touch-action:none;background:#1a2b20}
+    .photo{position:absolute;inset:-2%;background-image:url('https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2560&q=90');background-size:cover;background-position:50% 54%;transform:scale(1.055);will-change:transform,background-position;transition:transform 1.6s cubic-bezier(.2,.7,.2,1),background-position .8s ease;filter:saturate(.79) brightness(.78);}
+    .photo:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,15,11,.42),transparent 25%,transparent 55%,rgba(8,14,10,.5)),linear-gradient(90deg,rgba(9,16,11,.25),transparent 55%,rgba(9,16,11,.12)}
+    .vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 46%,transparent 28%,rgba(7,12,9,.12) 72%,rgba(5,9,7,.55) 120%)}
+    .mist{position:absolute;inset:0;pointer-events:none;opacity:.34;background:linear-gradient(180deg,transparent 30%,rgba(209,220,199,.12) 54%,transparent 75%);mix-blend-mode:screen;animation:mist 17s ease-in-out infinite alternate}
+    @keyframes mist{from{transform:translate3d(-2%,1%,0);opacity:.2}to{transform:translate3d(2%,-1%,0);opacity:.46}}
+    .grain{position:absolute;inset:-50%;pointer-events:none;opacity:.12;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.92' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E");animation:grain .22s steps(2) infinite}
+    @keyframes grain{0%{transform:translate(0,0)}25%{transform:translate(2%,-1%)}50%{transform:translate(-1%,2%)}75%{transform:translate(1%,1%)}100%{transform:translate(-2%,-1%)}}
+    header{position:fixed;z-index:2;top:0;left:0;right:0;padding:clamp(24px,4vw,48px) clamp(24px,5vw,72px);display:flex;align-items:center;justify-content:space-between;pointer-events:none}
+    .brand{font-size:11px;letter-spacing:.23em;text-transform:uppercase;color:rgba(242,239,229,.8)}
+    .sound{pointer-events:auto;color:inherit;display:flex;align-items:center;gap:10px;border:1px solid rgba(255,255,255,.28);background:rgba(16,23,17,.16);backdrop-filter:blur(12px);border-radius:100px;padding:10px 15px;font:500 11px var(--sans);letter-spacing:.1em;cursor:pointer;transition:background .2s,border-color .2s}
+    .sound:hover,.sound:focus-visible{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.6);outline:none}
+    .sound-icon{width:14px;height:14px;display:flex;align-items:center;justify-content:center;gap:2px}
+    .sound-icon i{display:block;width:2px;height:5px;border-radius:2px;background:currentColor;transition:height .2s}
+    .sound[aria-pressed="true"] .sound-icon i:nth-child(1){height:8px}.sound[aria-pressed="true"] .sound-icon i:nth-child(2){height:13px}.sound[aria-pressed="true"] .sound-icon i:nth-child(3){height:6px}.sound[aria-pressed="true"] .sound-icon i:nth-child(4){height:10px}
+    main{position:fixed;z-index:1;inset:0;display:grid;place-items:center;text-align:center;pointer-events:none;padding:90px 24px 120px}
+    .title{margin:0 0 14px;font:400 clamp(36px,6.8vw,82px)/1.28 var(--serif);letter-spacing:.16em;text-indent:.16em;text-shadow:0 2px 32px rgba(0,0,0,.25)}
+    .subtitle{margin:0;color:rgba(245,242,231,.78);font:400 clamp(12px,1.4vw,15px)/2 var(--serif);letter-spacing:.3em;text-indent:.3em}
+    .start{pointer-events:auto;margin-top:38px;display:inline-flex;align-items:center;gap:13px;border:1px solid rgba(255,255,255,.58);border-radius:100px;padding:14px 23px;color:#fff;text-decoration:none;background:rgba(22,31,23,.16);backdrop-filter:blur(8px);font:400 12px var(--sans);letter-spacing:.18em;cursor:pointer;transition:background .3s,transform .3s,border-color .3s}
+    .start:hover,.start:focus-visible{background:rgba(255,255,255,.16);border-color:#fff;transform:translateY(-2px);outline:none}
+    .start svg{width:14px;height:14px;transition:transform .3s}.start:hover svg{transform:translateX(4px)}
+    .bottom{position:fixed;z-index:2;left:0;right:0;bottom:0;padding:26px clamp(24px,5vw,72px) max(26px,env(safe-area-inset-bottom));display:flex;align-items:flex-end;justify-content:space-between;color:var(--muted);font-size:10px;letter-spacing:.16em;text-transform:uppercase;pointer-events:none}
+    .location{display:flex;align-items:center;gap:10px}.location:before{content:"";height:1px;width:28px;background:rgba(242,239,229,.6)}
+    .hint{display:flex;align-items:center;gap:9px;text-align:right}.mouse{width:15px;height:22px;border:1px solid rgba(242,239,229,.64);border-radius:9px;position:relative}.mouse:after{content:"";position:absolute;width:2px;height:4px;left:5px;top:4px;border-radius:2px;background:currentColor;animation:scroll 1.6s ease infinite}
+    @keyframes scroll{0%{transform:translateY(0);opacity:1}100%{transform:translateY(6px);opacity:0}}
+    .progress{position:fixed;z-index:3;left:50%;bottom:82px;transform:translateX(-50%);width:74px;height:1px;background:rgba(255,255,255,.25);opacity:0;transition:opacity .5s;pointer-events:none}.progress span{display:block;width:0;height:100%;background:#fff;transition:width .5s}
+    .walking .photo{transform:scale(1.13)}.walking .hero{opacity:0;transform:translateY(-12px);pointer-events:none}.hero{transition:opacity .65s,transform .65s}.walking .progress{opacity:1}
+    .walk-label{position:fixed;z-index:2;top:50%;left:50%;transform:translate(-50%,-50%);font:400 12px var(--serif);letter-spacing:.28em;color:rgba(255,255,255,.83);opacity:0;transition:opacity .4s;pointer-events:none;text-shadow:0 2px 12px #000}.walking.show-label .walk-label{opacity:1}
+    .destination{position:fixed;z-index:3;width:20px;height:20px;border:1px solid rgba(255,255,255,.8);border-radius:50%;transform:translate(-50%,-50%) scale(.6);opacity:0;pointer-events:none}.destination.ping{animation:ping .75s ease-out}@keyframes ping{0%{opacity:.9;transform:translate(-50%,-50%) scale(.5)}100%{opacity:0;transform:translate(-50%,-50%) scale(2.4)}}
+    @media(max-width:600px){header{padding-top:max(22px,env(safe-area-inset-top))}.brand{font-size:9px}.sound{padding:9px 12px;font-size:9px}.bottom{font-size:8px;padding-bottom:max(22px,env(safe-area-inset-bottom))}.title{letter-spacing:.11em;text-indent:.11em}.subtitle{letter-spacing:.2em;text-indent:.2em}.hint{max-width:145px;line-height:1.8}.progress{bottom:76px}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+  </style>
+</head>
+<body>
+  <div class="scene" id="scene" aria-label="可交互的森林小路场景">
+    <div class="photo" id="photo"></div><div class="mist"></div><div class="vignette"></div><div class="grain"></div>
+  </div>
+  <header><div class="brand">A QUIET WALK · 林间漫游</div><button class="sound" id="sound" type="button" aria-pressed="false" aria-label="开启森林环境音"><span class="sound-icon" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span id="soundText">开启声音</span></button></header>
+  <main><section class="hero" id="hero"><h1 class="title">林间漫游</h1><p class="subtitle">让思绪，沿着小路慢慢走远</p><button class="start" id="start" type="button">踏入森林 <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 8h10m-4-4 4 4-4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></section></main>
+  <div class="walk-label" id="walkLabel">沿着小路，继续向前</div>
+  <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+  <div class="destination" id="destination"></div>
+  <footer class="bottom"><div class="location" id="location">宁静 · 林间小径</div><div class="hint"><span class="mouse" aria-hidden="true"></span><span>点击前行 · 拖动视角<br>或使用方向键漫步</span></div></footer>
+  <script>
+    (()=>{
+      const scene=document.getElementById('scene'),photo=document.getElementById('photo'),start=document.getElementById('start'),sound=document.getElementById('sound'),soundText=document.getElementById('soundText'),bar=document.getElementById('progressBar'),locationLabel=document.getElementById('location'),destination=document.getElementById('destination');
+      let steps=0,walking=false,drag=null,audio=null,oscillators=[],offsetX=50,offsetY=54;
+      const enter=()=>{if(!walking){walking=true;document.body.classList.add('walking');setTimeout(()=>document.body.classList.add('show-label'),450);setTimeout(()=>document.body.classList.remove('show-label'),2600);}advance();};
+      function advance(x,y){if(!walking){walking=true;document.body.classList.add('walking');document.body.classList.remove('show-label');}steps++;const phase=steps%6;offsetX=42+((offsetX-42+7)%16);offsetY=52+((offsetY-52+3)%8);photo.style.backgroundPosition=`${offsetX}% ${offsetY}%`;photo.style.transform=`scale(${1.09+(steps%3)*.018}) translate3d(0,${(steps%2)*-.45}%,0)`;bar.style.width=`${((phase+1)/6)*100}%`;locationLabel.textContent=['宁静 · 林间小径','薄雾 · 深林深处','微光 · 林间转弯','静谧 · 苔石小路','晨露 · 林间幽径','远方 · 无尽林海'][phase];if(x!==undefined){destination.style.left=x+'px';destination.style.top=y+'px';destination.classList.remove('ping');void destination.offsetWidth;destination.classList.add('ping');}document.body.classList.add('show-label');clearTimeout(advance.labelTimer);advance.labelTimer=setTimeout(()=>document.body.classList.remove('show-label'),1500);}
+      start.addEventListener('click',enter);scene.addEventListener('click',e=>{if(drag&&drag.moved)return;advance(e.clientX,e.clientY)});
+      scene.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,moved:false};scene.setPointerCapture?.(e.pointerId)});
+      scene.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.lastX,dy=e.clientY-drag.lastY;if(Math.abs(e.clientX-drag.x)+Math.abs(e.clientY-drag.y)>5)drag.moved=true;if(drag.moved){offsetX=Math.max(15,Math.min(85,offsetX-dx*.035));offsetY=Math.max(42,Math.min(67,offsetY-dy*.025));photo.style.backgroundPosition=`${offsetX}% ${offsetY}%`;}drag.lastX=e.clientX;drag.lastY=e.clientY;});
+      const endDrag=()=>{if(drag?.moved){const wasMoved=drag.moved;setTimeout(()=>{if(wasMoved)drag=null},0)}else drag=null;};scene.addEventListener('pointerup',endDrag);scene.addEventListener('pointercancel',()=>drag=null);
+      window.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d',' '].includes(e.key)){e.preventDefault();if(e.key==='ArrowLeft'||e.key==='a'){offsetX=Math.min(85,offsetX+5);photo.style.backgroundPosition=`${offsetX}% ${offsetY}%`}else if(e.key==='ArrowRight'||e.key==='d'){offsetX=Math.max(15,offsetX-5);photo.style.backgroundPosition=`${offsetX}% ${offsetY}%`}else advance()}});
+      function toggleSound(){if(!audio){audio=new(window.AudioContext||window.webkitAudioContext)();const master=audio.createGain();master.gain.value=.055;master.connect(audio.destination);[196,293.66,392].forEach((freq,i)=>{const osc=audio.createOscillator(),gain=audio.createGain();osc.type='sine';osc.frequency.value=freq;gain.gain.value=i===0?.12:.035;osc.connect(gain);gain.connect(master);osc.start();oscillators.push({osc,gain,base:freq});});const lfo=audio.createOscillator(),lfoGain=audio.createGain();lfo.frequency.value=.13;lfoGain.gain.value=5;lfo.connect(lfoGain);lfoGain.connect(oscillators[1].osc.frequency);lfo.start();oscillators.push({osc:lfo,gain:lfoGain});}const enabled=sound.getAttribute('aria-pressed')!=='true';sound.setAttribute('aria-pressed',String(enabled));soundText.textContent=enabled?'关闭声音':'开启声音';if(audio.state==='suspended')audio.resume();audio.destination && (audio.destination.channelCount=2);}
+      sound.addEventListener('click',toggleSound);
+    })();
+  </script>
+</body>
+</html>
